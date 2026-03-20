@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChainScope — Ethereum Blockchain Explorer</title>
+  <meta name="description"
+    content="Professional Ethereum blockchain explorer. Search transactions, blocks, addresses and more." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+  <!-- ══ NAVBAR ════════════════════════════════════════════════ -->
+  <nav class="navbar">
+    <div class="nav-logo">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <polygon points="13,1 24,7.5 24,20.5 13,27 2,20.5 2,7.5" stroke="url(#ng)" stroke-width="1.6" fill="none" />
+        <polygon points="13,7 19,10.5 19,18.5 13,22 7,18.5 7,10.5" fill="url(#ng2)" opacity="0.7" />
+        <defs>
+          <linearGradient id="ng" x1="0" y1="0" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#3b9fd4" />
+            <stop offset="1" stop-color="#06c0e8" />
+          </linearGradient>
+          <linearGradient id="ng2" x1="0" y1="0" x2="26" y2="26" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#0784c3" />
+            <stop offset="1" stop-color="#3b9fd4" />
+          </linearGradient>
+        </defs>
+      </svg>
+      ChainScope
+    </div>
+
+    <div class="nav-links">
+      <button class="nav-link active" data-page="home">Home</button>
+      <button class="nav-link" data-page="blocks">Blockchain ▾</button>
+      <button class="nav-link" data-page="transactions">Tokens ▾</button>
+      <button class="nav-link" data-page="network">Analytics</button>
+      <button class="nav-link" data-page="gas">Gas Tracker</button>
+    </div>
+
+    <div class="nav-search">
+      <input id="nav-input" type="text" placeholder="Search by Address / Txn Hash / Block" />
+      <button id="nav-btn">Search</button>
+    </div>
+
+    <div class="nav-price" id="nav-price-wrap">
+      <span class="eth-dot">Ξ</span>
+      ETH <strong><span id="nav-price">—</span></strong>
+    </div>
+
+    <!-- Theme Toggle -->
+    <div class="theme-toggle" id="theme-toggle" role="group" aria-label="Theme switcher">
+      <button class="theme-btn active" data-theme="day" id="theme-day" title="Day mode">☀️ Day</button>
+      <button class="theme-btn" data-theme="night" id="theme-night" title="Night mode">🌙 Night</button>
+      <button class="theme-btn" data-theme="dim" id="theme-dim" title="Dim mode">🌒 Dim</button>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════
+     PAGE: HOME
+════════════════════════════════════════════════════════════ -->
+  <div id="page-home" class="page active">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-inner">
+        <h1>The Ethereum Blockchain Explorer</h1>
+        <p class="hero-sub">Search transactions, addresses, tokens, prices and activities on Ethereum</p>
+        <div class="hero-search">
+          <input id="hero-input" type="text" placeholder="Search by Address / Txn Hash / Block / Token / Domain Name" />
+          <button id="hero-btn">Search</button>
+        </div>
+        <div class="hero-live-badge">
+          <span class="live-dot"></span>
+          Ethereum Mainnet · Live Feed
+        </div>
+      </div>
+    </div>
+
+    <!-- Dark Stats Bar (exact Etherscan layout) -->
+    <div class="stats-bar">
+      <div class="stats-bar-inner">
+
+        <!-- ETH Price + BTC pair -->
+        <div class="stat-item">
+          <div class="stat-label-sm">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.6)">
+              <path d="M12 1L3.5 12.5 12 16.5 20.5 12.5zm0 14.5l-8.5-4 8.5 11.5L20.5 11.5z" />
+            </svg>
+            ETHER PRICE
+          </div>
+          <div class="stat-val-sm" id="s-price">—</div>
+          <div class="stat-sub-sm">@ <span id="s-btc">—</span> BTC &nbsp;<span id="s-change" class="price-down">—</span>
+          </div>
+        </div>
+
+        <!-- Market Cap -->
+        <div class="stat-item">
+          <div class="stat-label-sm">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 6v6l4 2" />
+            </svg>
+            MARKET CAP
+          </div>
+          <div class="stat-val-sm" id="s-mcap">—</div>
+        </div>
+
+        <!-- Transactions + TPS -->
+        <div class="stat-item">
+          <div class="stat-label-sm">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" />
+              <rect x="14" y="3" width="7" height="7" />
+              <rect x="3" y="14" width="7" height="7" />
+              <rect x="14" y="14" width="7" height="7" />
+            </svg>
+            TRANSACTIONS
+          </div>
+          <div class="stat-val-sm" id="s-txs">—</div>
+          <div class="stat-sub-sm">(<span id="s-tps">—</span> TPS)</div>
+        </div>
+
+        <!-- Gas Price (in teal) -->
+        <div class="stat-item">
+          <div class="stat-label-sm">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2">
+              <path d="M3 22V8l9-6 9 6v14" />
+              <path d="M9 22V12h6v10" />
+            </svg>
+            MED GAS PRICE
+          </div>
+          <div class="stat-gas-val" id="s-gas">—</div>
+          <div class="stat-sub-sm">(&lt; $<span id="s-gas-usd">0.01</span>)</div>
+        </div>
+
+        <!-- Last Finalized Block + Last Safe Block -->
+        <div class="stat-item">
+          <div class="stat-label-sm">LAST FINALIZED BLOCK</div>
+          <div class="stat-val-sm" id="s-finalized">—</div>
+          <div class="stat-sub-sm">LAST SAFE BLOCK &nbsp;<span id="s-safe"
+              style="color:rgba(255,255,255,0.75);font-weight:600">—</span></div>
+        </div>
+
+        <!-- Mini Sparkline — Transaction History 14 Days -->
+        <div class="sparkline-wrap">
+          <div class="sparkline-label">TRANSACTION HISTORY IN 14 DAYS</div>
+          <canvas id="sparkCanvas"></canvas>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- Alert -->
+    <div class="content" style="padding-bottom:0">
+      <div class="alert alert-warning" id="home-alert"></div>
+    </div>
+
+    <!-- Dual Column: Latest Blocks + Latest Txs -->
+    <div class="content">
+      <div class="dual-col">
+
+        <!-- Latest Blocks -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0784c3" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                </svg>
+                Latest Blocks
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="App.goPage('blocks')">View all blocks</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <tbody id="home-blocks-tb"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Latest Transactions -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0784c3" stroke-width="2">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+                Latest Transactions
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="App.goPage('transactions')">View all txns</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <tbody id="home-txs-tb"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+     PAGE: BLOCKS
+════════════════════════════════════════════════════════════ -->
+  <div id="page-blocks" class="page">
+    <!-- Page sub-nav -->
+    <div class="page-nav">
+      <div class="page-nav-inner">
+        <button class="page-nav-btn active">Blocks</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Ethereum Blocks</div>
+            <div class="card-subtitle">Latest <span id="blk-count">—</span> blocks (Updated every ~12 seconds)</div>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Block</th>
+                <th>Age</th>
+                <th>Txn</th>
+                <th>Fee Recipient</th>
+                <th>Gas Used</th>
+                <th>Gas Limit</th>
+                <th>Base Fee</th>
+                <th>Reward</th>
+              </tr>
+            </thead>
+            <tbody id="blocks-tb"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="blocks-pag"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+     PAGE: TRANSACTIONS
+════════════════════════════════════════════════════════════ -->
+  <div id="page-transactions" class="page">
+    <div class="page-nav">
+      <div class="page-nav-inner">
+        <button class="page-nav-btn active">Transactions</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Ethereum Transactions</div>
+            <div class="card-subtitle">Latest <span id="tx-count">—</span> transactions (Real-time)</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-outline btn-sm" id="exp-csv">⬇ Download CSV</button>
+            <button class="btn btn-outline btn-sm" id="exp-json">⬇ JSON</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Txn Hash</th>
+                <th>Method</th>
+                <th>Block</th>
+                <th>Age</th>
+                <th>From</th>
+                <th></th>
+                <th>To</th>
+                <th>Value</th>
+                <th>Txn Fee</th>
+              </tr>
+            </thead>
+            <tbody id="txs-tb"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="txs-pag"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+     PAGE: ADDRESS
+════════════════════════════════════════════════════════════ -->
+  <div id="page-address" class="page">
+    <div class="page-nav">
+      <div class="page-nav-inner">
+        <button class="page-nav-btn active">Address</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="addr-search-bar">
+        <input id="addr-inp" type="text" placeholder="Enter an Ethereum address (0x…)" />
+        <button class="btn btn-primary" id="addr-btn">🔍 Lookup</button>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px">Sample addresses:</div>
+        <div class="chip-row" id="quick-chips"></div>
+      </div>
+
+      <div id="addr-result" style="display:none">
+        <div class="addr-overview">
+          <div class="addr-stat">
+            <div class="addr-stat-label">Overview</div>
+            <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Address</div>
+            <div id="a-addr" style="font-size:.78rem;word-break:break-all;color:var(--text-dark)" class="mono"></div>
+          </div>
+          <div class="addr-stat">
+            <div class="addr-stat-label">ETH Balance</div>
+            <div id="a-bal" class="addr-stat-val"></div>
+            <div id="a-usd" class="addr-stat-sub"></div>
+          </div>
+          <div class="addr-stat">
+            <div class="addr-stat-label">Transactions</div>
+            <div id="a-txcount" class="addr-stat-val"></div>
+            <div class="addr-stat-sub">Total transactions found</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Transactions</div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Txn Hash</th>
+                  <th>Method</th>
+                  <th>Age</th>
+                  <th>From</th>
+                  <th></th>
+                  <th>To</th>
+                  <th>Value</th>
+                  <th>Txn Fee</th>
+                </tr>
+              </thead>
+              <tbody id="addr-tb"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+     PAGE: NETWORK ANALYTICS
+════════════════════════════════════════════════════════════ -->
+  <div id="page-network" class="page">
+    <div class="page-nav">
+      <div class="page-nav-inner">
+        <button class="page-nav-btn active">Network Analytics</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="net-grid">
+        <div class="net-stat">
+          <div class="net-stat-label">Latest Block</div>
+          <div class="net-stat-val" id="n-block">—</div>
+        </div>
+        <div class="net-stat">
+          <div class="net-stat-label">Total Transactions</div>
+          <div class="net-stat-val" id="n-txs">—</div>
+        </div>
+        <div class="net-stat">
+          <div class="net-stat-label">Network Hashrate</div>
+          <div class="net-stat-val" id="n-hash">—</div>
+        </div>
+        <div class="net-stat">
+          <div class="net-stat-label">Difficulty</div>
+          <div class="net-stat-val" id="n-diff">—</div>
+        </div>
+        <div class="net-stat">
+          <div class="net-stat-label">Avg Block Time</div>
+          <div class="net-stat-val" id="n-btime">—</div>
+        </div>
+        <div class="net-stat">
+          <div class="net-stat-label">Connected Peers</div>
+          <div class="net-stat-val" id="n-peers">—</div>
+        </div>
+        <div class="net-stat">
+          <div class="net-stat-label">TPS (current)</div>
+          <div class="net-stat-val" id="n-tps">—</div>
+        </div>
+        <div class="net-stat">
+          <div class="net-stat-label">Pending TXs</div>
+          <div class="net-stat-val" id="n-pending">—</div>
+        </div>
+        <div class="net-stat">
+          <div class="net-stat-label">Market Cap</div>
+          <div class="net-stat-val" id="n-mcap">—</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head">Transaction Volume — Last 20 Blocks <span class="chart-head-sub">Updates every new
+            block</span></div>
+        <div class="chart-body"><canvas id="txVolChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head">Network Hashrate Trend (TH/s)</div>
+        <div class="chart-body" style="padding-bottom:8px"><canvas id="hashrateChart" style="max-height:120px"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+     PAGE: GAS TRACKER
+════════════════════════════════════════════════════════════ -->
+  <div id="page-gas" class="page">
+    <div class="page-nav">
+      <div class="page-nav-inner">
+        <button class="page-nav-btn active">Gas Tracker</button>
+      </div>
+    </div>
+    <div class="content">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <h2 style="font-size:1rem;font-weight:700;color:var(--text-dark)">Ethereum Gas Price Tracker</h2>
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:2px">Refreshes every 3 seconds. Gas prices are
+            in Gwei.</p>
+        </div>
+      </div>
+      <div class="gas-cards">
+        <div class="gas-card">
+          <div class="gas-tier" style="color:var(--green)">🐢 Low</div>
+          <div class="gas-num" id="g-slow" style="color:var(--green)">—</div>
+          <div class="gas-sub">Gwei</div>
+          <div class="gas-sub" id="g-slow-u" style="margin-top:6px;color:var(--text-muted)">—</div>
+        </div>
+        <div class="gas-card">
+          <div class="gas-tier" style="color:var(--blue)">🚗 Average</div>
+          <div class="gas-num" id="g-std" style="color:var(--blue)">—</div>
+          <div class="gas-sub">Gwei</div>
+          <div class="gas-sub" id="g-std-u" style="margin-top:6px;color:var(--text-muted)">—</div>
+        </div>
+        <div class="gas-card">
+          <div class="gas-tier" style="color:#e67e22">🚀 High</div>
+          <div class="gas-num" id="g-fast" style="color:#e67e22">—</div>
+          <div class="gas-sub">Gwei</div>
+          <div class="gas-sub" id="g-fast-u" style="margin-top:6px;color:var(--text-muted)">—</div>
+        </div>
+        <div class="gas-card">
+          <div class="gas-tier" style="color:var(--danger)">⚡ Instant</div>
+          <div class="gas-num" id="g-instant" style="color:var(--danger)">—</div>
+          <div class="gas-sub">Gwei</div>
+          <div class="gas-sub" id="g-instant-u" style="margin-top:6px;color:var(--text-muted)">—</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head">Gas Price History (Gwei) — Live Feed <span class="chart-head-sub">Last 30 data points ·
+            3s interval</span></div>
+        <div class="chart-body"><canvas id="gasChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ MODAL ══════════════════════════════════════════════ -->
+  <div id="modal-backdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-head-title" id="modal-title">Detail</div>
+        <button class="modal-close" id="modal-close">✕</button>
+      </div>
+      <table class="detail-table" id="modal-body"></table>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER ══════════════════════════════════════════════ -->
+  <footer class="footer">
+    <strong>ChainScope</strong> · Ethereum Blockchain Explorer ·
+    Powered by simulated data.
+    To connect real backend: replace <code>BlockchainEngine</code> methods with <code>fetch()</code> API calls. ·
+    <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a>
+  </footer>
+
+  <script src="blockchain.js"></script>
+  <script src="charts.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
